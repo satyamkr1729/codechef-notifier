@@ -5,6 +5,9 @@ chrome.runtime.onInstalled.addListener(function() {
 var ques_array=[];
 var is_busy=false;
 var badge=0;
+var result=[];
+var is_result_busy=false;
+
 function checker(item)
 {
   //console.log(item);
@@ -27,50 +30,93 @@ function getResult(ques)
 						if(r.result_code!="wait"){
               badge++;
               chrome.browserAction.setBadgeText({text: String(badge)});
-						  s=r.result_code;
+						  var s=r.result_code;
 							var n=r.time;
               var a=r.score;
+              var e=r.signal;
+							var c=r.error_link;
 
               var op={
                 type: "list",
-                title: "undefined",
+                title: ques.qname,
                 message: "",
-                items: [{title: "Problem: ", message: ques.qname}]
+                items: []
               }
-
-							switch(s){
-                case"partial_accepted": op.title="Partially Accepted!!";
+              
+              var res={time: n,prb: ques.qname};
+              var table="<table class='status-table' cellspacing='0' cellpadding='5' width='60%'><tr><th>Sub-Task</th><th>Task #</th><th>Result<br/>(time)</th></tr>";
+              
+              switch(s){
+                case"partial_accepted": res.verdict="Partially Correct";
+                                        op.items.push({title: "Verdict: ", message: "Partially Accepted!!"});
                                         op.items.push({title: "Score: ", message: String(a)});
                                         op.items.push({title: "Time: ", message: String(n)+"s"}); 
                                         op.iconUrl="/images/pcorrect_chef_128.png"; break;
 								
-								case"accepted":			    op.title="Accepted!!";
-                                        op.items.push({title: "Score", message: String(a)});
-                                        op.items.push({title: "Time", message: String(n)+"s"});  
-                                        op.iconUrl="/images/correct_chef_128.png"; break;
+                case"accepted":			    res.verdict="Correct";
+                                        op.items.push({title: "Verdict: ", message: "Accepted!!"});                                        
+                                        op.items.push({title: "Score: ", message: String(a)});
+                                        op.items.push({title: "Time: ", message: String(n)+"s"});  
+                                        op.iconUrl="/images/correct_chef_128.png"; 
+                                        table+="<tr class='correct'><td>1</td><td>0</td><td>AC<br>("+n+")</td></tr>";
+                                        table+="<tr><th></th><th></th><th>Total Score = 100.00%<br/></th></tr>"; break;
 
-								case"wrong":		        op.title="Wrong!!";
-                                        op.items.push({title: "Score", message: String(a)});
-                                        op.items.push({title: "Time", message: String(n)+"s"});
-                                        op.iconUrl="/images/wrong_chef_128.png";  break;
+                case"wrong":		        res.verdict="Wrong"
+                                        op.items.push({title: "Verdict: ", message: "Wrong!!"});                                                                                
+                                        op.items.push({title: "Score: ", message: String(a)});
+                                        op.items.push({title: "Time: ", message: String(n)+"s"});
+                                        op.iconUrl="/images/wrong_chef_128.png";  
+                                        table+="<tr class='wrong'><td>1</td><td>0</td><td>WA<br>("+n+")</td></tr>";
+                                        table+="<tr><th></th><th></th><th>Total Score =0.00%<br/></th></tr>"; break;
 
-                case"time":				      op.title="Time Limit Exceeded!!";
-                                        op.iconUrl="/images/wrong_chef_128.png";  break;
+                case"time":				      res.verdict="TLE"
+                                        op.items.push({title: "Verdict: ", message: "Time Limit Exceeded!!"});                                                                                
+                                        op.iconUrl="/images/wrong_chef_128.png";  
+                                        table+="<tr class='wrong'><td>1</td><td>0</td><td>TLE<br>("+n+")</td></tr>";
+                                        table+="<tr><th></th><th></th><th>Total Score = 0.00%<br/></th></tr>"; break;
 
-                case"runtime":			    op.title="Runtime Error!!";  
-                                        op.iconUrl="/images/wrong_chef_128.png"; break;
+                case"runtime":			    res.verdict="Runtime Error";
+                                        op.items.push({title: "Verdict: ", message: "Runtime Error("+e+")!!"});                                        
+                                        op.iconUrl="/images/wrong_chef_128.png"; 
+                                        table+="<tr class='wrong'><td>1</td><td>0</td><td>RE("+e+")<br>("+n+")</td></tr>";
+                                        table+="<tr><th></th><th></th><th>Total Score = 0.00%<br/></th></tr>"; break;
                 
-								case"compile":		      op.title="Compilation Error!!";  
+                case"compile":		      res.verdict="Compilation Error";
+                                        op.items.push({title: "Verdict: ", message: "Compilation Error!!"});                                        
+                                        op.iconUrl="/images/wrong_chef_128.png"; 
+                                        table+="<tr class='wrong'><td>1</td><td>0</td><td>CE<br>("+n+")<br><a href='"+c+"' target='_blank'>click here</a></td></tr>";
+                                        table+="<tr><th></th><th></th><th>Total Score = 0.00%<br/></th></tr>"; break;
+
+                case"score":		        res.verdict="Insufficient Score";
+                                        op.items.push({title: "Verdict: ", message: "Insufficient Score!!"});                                        
                                         op.iconUrl="/images/wrong_chef_128.png"; break;
 
-                case"score":		        op.title="Insufficient Score!!";  
-                                        op.iconUrl="/images/wrong_chef_128.png"; break;
-
-                case"error":			      op.title="Internal Error!!";  
+                case"error":			      res.verdict="Internal Error";
+                                        op.items.push({title: "Verdict: ", message: "Internal Error!!"});                                        
                                         op.iconUrl="/images/wrong_chef_128.png"; break;
               }
-    
-              chrome.notifications.create(String(ques.id),op);              
+              
+              table+="</table>";
+              chrome.notifications.create(String(ques.id),op);
+              
+              if(r.show_status_table==="yes"){
+								$.ajax({
+									url:"https://www.codechef.com/error_status_table/"+r.upid+"/",
+									success:function(r){
+                        if(r=="")
+                          res.error_table=table;
+                        else
+                          res.error_table=r;
+                      }
+										})
+                }
+                else
+                  res.error_table=table;   
+                
+                while(is_result_busy){}
+                is_result_busy=true;
+                result.push(res);  
+                is_result_busy=false;
       }
       else
         setTimeout(getResult,2000,ques);

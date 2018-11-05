@@ -3,7 +3,7 @@
     "version": "1.0",
     "description": "Build an Extension!",
     "manifest_version": 2,
-    "permissions": ["declarativeContent", "storage","notifications","https://www.codechef.com/get_submission_status/*","http://www.codechef.com/get_submission_status/*"],
+    "permissions": ["declarativeContent", "storage","notifications","https://www.codechef.com/get_submission_status/*","http://www.codechef.com/get_submission_status/*","https://www.codechef.com/error_status_table/*","https://www.codechef.com/error_status_table/*"],
     "content_scripts": [
                           {
                             "matches": ["https://www.codechef.com/submit/complete/*"],
