@@ -26,20 +26,23 @@ window.onload=function(){
     if(result.length==0)
         setDefault();
     else
-        show(0);
+    {
+        show(result.length-1);
+        i=result.length-1;
+    }
     document.getElementById("prev").onclick=prev;
     document.getElementById("next").onclick=next;
     document.getElementById("done").onclick=done;
 };
 
-function prev(){
+function next(){
     //console.log(i);
     if(i!=0)
         i--;
     show(i);
 }
 
-function next(){
+function prev(){
    // console.log(i);
     if(i!=result.length-1)
         i++;        

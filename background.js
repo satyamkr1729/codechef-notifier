@@ -126,6 +126,7 @@ function getResult(ques)
 
 chrome.runtime.onStartup.addListener(function(){
   badge=0;
+  chrome.tts.VoiceGender="female";
   chrome.storage.sync.get(['arr'],function(result){
     ques_array=result.arr;
     if(ques_array.length!=0)
