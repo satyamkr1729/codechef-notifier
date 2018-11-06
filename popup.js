@@ -20,6 +20,12 @@ function show(j){
     }
     document.getElementById("time").innerHTML=result[j].time+" s";
     document.getElementById("status_table").innerHTML=result[j].error_table;
+
+    if(j==result.length-1)
+      document.getElementById("prev").disabled=true;    
+    
+    if(j==0)
+      document.getElementById("next").disabled=true;    
 }
 
 window.onload=function(){
@@ -33,19 +39,25 @@ window.onload=function(){
     document.getElementById("prev").onclick=prev;
     document.getElementById("next").onclick=next;
     document.getElementById("done").onclick=done;
+
+    if(result.length==1)
+        document.getElementById("next").disabled=true;
+    document.getElementById("prev").disabled=true;    
 };
 
 function next(){
     //console.log(i);
+    document.getElementById("prev").disabled=false;    
     if(i!=0)
-        i--;
+        i--;    
     show(i);
 }
 
 function prev(){
    // console.log(i);
+   document.getElementById("next").disabled=false;    
     if(i!=result.length-1)
-        i++;        
+        i++;
     show(i); 
 }
 
@@ -83,4 +95,8 @@ function setDefault()
     document.getElementById("verdict").innerHTML=pholder;
     document.getElementById("time").innerHTML=pholder;
     document.getElementById("status_table").innerHTML=pholder;    
+
+    document.getElementById("next").disabled=true;
+    document.getElementById("prev").disabled=true;
+    document.getElementById("done").disabled=true;
 }
