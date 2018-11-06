@@ -150,3 +150,12 @@ chrome.runtime.onMessage.addListener(function(request,sender,sendResponse){
   is_busy=false;
   setTimeout(checker,500,request.entry);
 })
+
+chrome.commands.onCommand.addListener(function(command){
+    if(command==="clean-all")
+    {
+      badge=0;
+      result=[];
+      chrome.browserAction.setBadgeText({text: ""});      
+    }
+})

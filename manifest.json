@@ -29,5 +29,15 @@
                   "16": "images/correct_chef_16.png",
                   "48": "images/correct_chef_48.png",
                   "128": "images/correct_chef_128.png"
-                }
+                },
+
+      "commands": {
+                    "clean-all": {
+                                    "suggested_key": {
+                                                        "default": "Alt+Shift+Delete",
+                                                        "mac": "Alt+Shift+Delete"
+                                                      },
+                                    "description": "clean all the submission results"
+                                 }
+                  }
   }
